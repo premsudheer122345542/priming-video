@@ -1,0 +1,39 @@
+name: Deploy Docker to EC2
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    # 1. Checkout your repo
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+
+    # 2. Copy files directly to EC2
+    - name: Copy files to EC2
+      uses: appleboy/scp-action@v0.1.7
+      with:
+        host: ${{ secrets.EC2_HOST }}
+        username: ${{ secrets.EC2_USER }}
+        key: ${{ secrets.EC2_SSH_KEY }}
+        source: "."
+        target: "/home/ec2-user/"
+
+    # 3. SSH into EC2 and build/run Docker container
+    - name: Build & Run Docker on EC2
+      uses: appleboy/ssh-action@v0.1.7
+      with:
+        host: ${{ secrets.EC2_HOST }}
+        username: ${{ secrets.EC2_USER }}
+        key: ${{ secrets.EC2_SSH_KEY }}
+        script: |
+          cd /home/ec2-user/
+          docker build -t my-docker-app .
+          docker stop my-docker-app || true
+          docker rm my-docker-app || true
+          docker run -d --name my-docker-app -p 5000:5000 my-docker-app
