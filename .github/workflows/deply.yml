@@ -36,4 +36,4 @@ jobs:
           docker build -t my-docker-app .
           docker stop my-docker-app || true
           docker rm my-docker-app || true
-          docker run -d --name my-docker-app -p 5000:5000 my-docker-app
+          docker run -d --name my-docker-app -p 5000:8080 my-docker-app
